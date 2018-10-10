@@ -1,0 +1,13 @@
+.nav {
+    margin: 10px;
+}
+
+.nav-item {
+    margin: 10px;
+}
+
+/*  Card Styling */
+.card-container, .card-buttons {
+    display: flex;
+    justify-content: space-around;
+}
