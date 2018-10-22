@@ -1,10 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import axios from 'axios'
-import store from '../store'
-import { _loadProducts } from '../reducers/products'
-import { _loadOrders } from '../reducers/orders'
-import { createLineItem } from '../reducers/lineItems'
+import { createLineItem, updateLineItem } from '../reducers/lineItems'
+import { updateOrder } from '../reducers/orders'
 
 import ProductCard from './ProductCard'
 
@@ -12,56 +9,40 @@ import ProductCard from './ProductCard'
 class Products extends Component {
     constructor (props) {
         super(props)
-        
-        console.log(props)
-
-        this.state = {
-            products: this.props.products,
-            order: this.props.order,
-        }
     
         this.orderIncrease = this.orderIncrease.bind(this)
         this.orderDecrease = this.orderDecrease.bind(this)
         this.cancelOrder = this.cancelOrder.bind(this)
     }
 
-    componentDidMount () {
-        console.log('Props before: ', this.props)
-        axios.get('/api/orders')
-            .then(res => res.data)
-            .then(data => store.dispatch(_loadOrders(data)))
-            .then(()=> {
-                axios.get('/api/products')
-                    .then(res => res.data)
-                    .then(data => store.dispatch(_loadProducts(data)))
-            })
+    componentDidUpdate () {
+        // console.log('componentDidUpdate ran....')
+        // updateOrder(this.props.order.id)
     }
 
     orderIncrease (productId) {
-        if (!this.state.items.includes(item => item.id === productId)) {
-            console.log('item not in items.')
+        let lineItem = this.props.order.lineItems.find(item => item.productId == productId)
+        const { order } = this.props
+        console.log("order in orderIncrease is", order)
+        // console.log('productId is: ', productId)
+        // console.log('product  is: ', product)
+        // console.log('order line items are: ', this.props.order.lineItems)
+
+        if (lineItem == undefined) {
+            console.log('Create lineItem')
+            this.props.createLineItem(order.id, productId)
+            updateOrder(order.id)
+        } else {
+            console.log('Update Quantity on lineItem: ', lineItem)
+            lineItem.quantity++
+            updateLineItem(order.id, lineItem)
         }
 
-        // const _order = this.state.order
-        // if (this.state.order[productId]) {
-        //     _order[productId] = this.state.order[productId] + 1
-        // } else {
-        //     _order[productId] = 1
-        // }
-
-        // this.setState({
-        //     order: _order
-        // })
     }
     
     orderDecrease  (productId) {
-        const _order = this.state.order
-        if (this.state.order[productId] > 0) {
-            _order[productId] = this.state.order[productId] - 1
-        }
-        this.setState({
-            order: _order
-        })
+        const { order } = this.state
+        // deleteLineItem(order.id, productId )
     }
 
     cancelOrder () {
@@ -75,9 +56,15 @@ class Products extends Component {
     }
 
     render () {
-        console.log('the this.props.order is: ', this.props.order)
+        const lineItems = (this.props.order) ? this.props.order.lineItems : []
+
         return (
             <div>
+                <hr />
+                <h1>Order is:</h1>
+                {lineItems.map(li => (
+                    <p>{li.productId}</p>
+                ))}
                 <h1>Products</h1>
                 <div className={'card-container'}>
                     {this.props.products.map(product => {
@@ -102,15 +89,27 @@ class Products extends Component {
 }
 
 const mapStateToProps = (state) => {
+    console.log('state in mapStateToPRops is: ', state)
+
     const { products, orders } = state
+    let order = orders.find(order => order.status === 'CART')
+    if (order) {
+        console.log('the order found is: ', order)
+        // order.lineItems = [ ...order.lineItems, ...lineItems ]
+    }
+    // (props.order) ? [...props.order.lineItems, props.lineItems] : props.lineItems
+
     return { 
         products, 
-        order: orders.find(order => order.status === 'CART') 
+        order
     }
 }
 
-const mapDispatchToProps = (state) => {
+const mapDispatchToProps = (dispatch) => {
     return {
+        createLineItem: (orderId, productId) => { dispatch(createLineItem(orderId, productId)) },
+        deleteLineItem: (orderId, lineItemsId) => { dispatch(deleteLineItem(orderId, lineItemsId)) },
+        updateOrder: (orderId)=> dispatch(updateOrder(orderId))
     }
 }
 

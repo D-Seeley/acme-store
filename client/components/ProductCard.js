@@ -9,8 +9,8 @@ const ProductCard = (props) => {
                 <hr />
                 <p>{`${quantity} ordered`}</p>
                 <div className={'card-buttons'}>
-                    <button onClick={()=> orderIncrease(product.name)}>+</button>
-                    <button onClick={()=> orderDecrease(product.name)}>-</button>
+                    <button onClick={()=> orderIncrease(product.id)}>+</button>
+                    <button onClick={()=> orderDecrease(product.id)}>-</button>
                 </div>
             </div>
         </div>

@@ -17,7 +17,5 @@ const reducer = combineReducers({
 })
 
 const store = createStore(reducer, applyMiddleware(thunk, logger))
-
-console.log('the state of the store is: ', store.getState())
  
 export default store
